@@ -17,7 +17,7 @@ public class Player : MonoBehaviour
     public LayerMask groundLayer; //capa que se usa para comprobar si el jugador está en el suelo
 
     public int maxLives=3;
-    private int currentLives;
+    public int currentLives;
     private bool isDead = false;
 
     void Start() //cuando se da play
@@ -33,6 +33,9 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+
+
+        if (!isDead) ScoreManager.instance.AddPoints((int)(Time.deltaTime * 10));
 
         if (isDead) return; //si el jugador está muerto, no hacemos nada
 

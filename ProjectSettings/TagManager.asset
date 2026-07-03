@@ -40,6 +40,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Score
+    uniqueID: 4235462983
+    locked: 0
   - name: Fondo
     uniqueID: 3025656299
     locked: 0
