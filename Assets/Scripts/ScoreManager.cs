@@ -1,20 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro; // Necesario para usar TextMeshPro
+using UnityEngine.UI; // ¡Importante para usar el componente Image de los corazones!
+using TMPro;
 
 public class ScoreManager : MonoBehaviour
 {
-    public static ScoreManager instance; // Singleton para llamarlo desde Player
+    public static ScoreManager instance; 
 
-    public TextMeshProUGUI scoreText; // Arrastra aquí tu objeto ScoreText
-    public Player playerScript;       // Arrastra aquí tu objeto Player
+    [Header("Componentes UI")]
+    public TextMeshProUGUI scoreText; 
+    public Player playerScript;       
+    
+    // Aquí arrastra tus 3 imágenes de corazones en el Inspector
+    public Image[] corazonesUI; 
 
     private int currentScore = 0;
 
     void Awake()
     {
-        // Configuramos el Singleton
         if (instance == null)
         {
             instance = this;
@@ -27,32 +31,58 @@ public class ScoreManager : MonoBehaviour
 
     void Start()
     {
+        // Forzamos a que al arrancar el nivel, los 3 corazones estén encendidos
+        if (corazonesUI != null)
+        {
+            for (int i = 0; i < corazonesUI.Length; i++)
+            {
+                if (corazonesUI[i] != null)
+                {
+                    corazonesUI[i].enabled = true;
+                }
+            }
+        }
+
         UpdateScoreText();
     }
 
-    // Función pública para sumar puntos
+    // Sumar puntos al recolectar Gemas
     public void AddPoints(int pointsToAdd)
     {
         currentScore += pointsToAdd;
         UpdateScoreText();
     }
 
-    // Función pública para refrescar la pantalla cuando el jugador pierde vida
+    // Refrescar pantalla cuando el jugador pierde vida
     public void RefreshUI()
     {
         UpdateScoreText();
     }
 
-    // Traduce los datos a la pantalla
     void UpdateScoreText()
     {
+        // 1. Gestionar el formato del Score a 000
         if (scoreText != null)
         {
-            int vidasActuales = (playerScript != null) ? playerScript.maxLives : 3; 
-            // Si el juego ya empezó, intentamos leer las vidas reales del script
-            // Nota: Como en tu script 'currentLives' es private, usamos una aproximación o puedes cambiar 'private int currentLives' a 'public int currentLives' en tu Player.cs para que se lea exacto.
-            
-            scoreText.text = "Score: " + currentScore;
+            // "D3" transforma el número para que siempre muestre mínimo 3 dígitos (ej: 005)
+            scoreText.text = currentScore.ToString("D3");
+        }
+
+        // 2. Gestionar el encendido/apagado de los corazones visuales
+        if (playerScript != null && corazonesUI != null)
+        {
+            for (int i = 0; i < corazonesUI.Length; i++)
+            {
+                // Como pusiste 'public int currentLives' en tu Player, podemos leerlo directo:
+                if (i < playerScript.currentLives)
+                {
+                    corazonesUI[i].enabled = true;  // Muestra el corazón
+                }
+                else
+                {
+                    corazonesUI[i].enabled = false; // Apaga el corazón si ya perdió esa vida
+                }
+            }
         }
     }
 }

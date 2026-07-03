@@ -20,8 +20,16 @@ public class Player : MonoBehaviour
     public int currentLives;
     private bool isDead = false;
 
+    [Header("MENÚ GAME OVER")]
+    public GameObject objetoMenuGameOver; // Arrastra aquí el objeto 'MenuGameOver'
+
+    [Header("INTERFAZ DE VICTORIA")]
+    public GameObject objetoMenuVictoria; // Aquí arrastrarás tu pantalla de victoria
+
     void Start() //cuando se da play
     {
+        Time.timeScale = 1f; // El juego corre a velocidad normal
+
         rb2D = GetComponent<Rigidbody2D>();
 
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -35,7 +43,6 @@ public class Player : MonoBehaviour
     {
 
 
-        if (!isDead) ScoreManager.instance.AddPoints((int)(Time.deltaTime * 10));
 
         if (isDead) return; //si el jugador está muerto, no hacemos nada
 
@@ -82,40 +89,72 @@ public class Player : MonoBehaviour
 
     void TakeDamage()
     {
-        currentLives--;
+        currentLives--; // Restamos una vida
+    
+        // Le avisamos al ScoreManager que actualice los círculos rojos en la UI
+        if (ScoreManager.instance != null) 
+        {
+            ScoreManager.instance.RefreshUI();
+        }
+    
         Debug.Log("Vidas restantes: " + currentLives);
 
         if(currentLives > 0)
         {
-            anim.SetTrigger("hurt"); //activamos la animación de recibir daño
+            if (anim != null) 
+            {
+                anim.SetTrigger("hurt"); // Activamos tu animación de recibir daño
+            }
 
-            float pushDirection = spriteRenderer.flipX ? 1f : -1f; //determinamos la dirección de empuje basada en la orientación del sprite
-            rb2D.velocity = Vector2.zero; //reseteamos la velocidad del jugador
-            rb2D.AddForce(new Vector2(pushDirection * 5f, 5f), ForceMode2D.Impulse); //empujamos al jugador hacia atrás y hacia arriba
-
+            // Aplicamos el empuje físico hacia atrás para separarlo del enemigo
+            float pushDirection = spriteRenderer.flipX ? 1f : -1f;
+            rb2D.velocity = new Vector2(pushDirection * 5f, 5f); // Asignación directa para evitar bloqueos con AddForce
         }
         else
         {
-            Die(); //si el jugador no tiene vidas, muere
+            Die(); // Si se queda sin vidas, muere
         }
     }
 
     void Die()
     {
         isDead = true;
-        rb2D.velocity = Vector2.zero; //reseteamos la velocidad del jugador
-        anim.SetTrigger("die"); //activamos la animación de morir
+        rb2D.velocity = Vector2.zero; 
+        if (anim != null) anim.SetTrigger("die"); 
         Debug.Log("¡Has muerto!");
 
-        Invoke("RestartLevel", 2f); //reiniciamos el nivel después de 2 segundos
+        // Llamamos al menú de Game Over después de 1.5 segundos para ver la animación de muerte
+        Invoke("MostrarMenuGameOver", 1.5f); 
     }
 
-    void WinGame()
+    void MostrarMenuGameOver()
+    {
+        if (objetoMenuGameOver != null)
+        {
+            objetoMenuGameOver.SetActive(true); // Hace visible el menú en la pantalla
+            Time.timeScale = 0f; // Pausa por completo las físicas y el movimiento del juego
+        }
+    }
+
+    public void WinGame()
     {
         isDead = true; //desactivamos el control del jugador
         rb2D.velocity = Vector2.zero; //reseteamos la velocidad del jugador
         anim.SetTrigger("win"); //activamos la animación de ganar
         Debug.Log("¡Has ganado!");
+
+        // Llamamos al menú de victoria después de 1.5 segundos
+        Invoke("MostrarPantallaVictoria", 1.5f);
+    }
+
+    // Creamos este pequeño método de apoyo debajo
+    void MostrarPantallaVictoria()
+    {
+        if (objetoMenuVictoria != null)
+        {
+            objetoMenuVictoria.SetActive(true); // Enciende la pantalla de felicidades
+            Time.timeScale = 0f; // Pausa el juego para finalizar por completo
+        }
     }
 
     void RestartLevel()
@@ -126,5 +165,17 @@ public class Player : MonoBehaviour
     private void FixedUpdate() //se ejecuta a una velocidad constante, ideal para físicas
     {
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, groundLayer); //comprobamos si el jugador está en el suelo
+    }
+
+    public void BotonSeguirJugando()
+    {
+        Time.timeScale = 1f; // Devuelve el tiempo a la normalidad
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name); // Reinicia el nivel actual
+    }
+
+    public void BotonIrAlMenuPrincipal()
+    {  
+        Time.timeScale = 1f; // Devuelve el tiempo a la normalidad
+        SceneManager.LoadScene(0); // Carga la escena número 0 (Menú de Inicio)
     }
 }

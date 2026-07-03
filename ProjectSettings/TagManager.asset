@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Floor
   - Enemy
+  - Gema
+  - MetaCueva
+  - WinZone
   layers:
   - Default
   - TransparentFX
@@ -14,7 +17,7 @@ TagManager:
   - Water
   - UI
   - score
-  - 
+  - Gema
   - 
   - 
   - 
